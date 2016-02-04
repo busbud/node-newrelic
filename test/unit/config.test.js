@@ -39,6 +39,26 @@ describe("the agent configuration", function () {
     expect(c.agent_enabled).equal(true)
   })
 
+  it("should change the default port when no port is specified and ssl is turned off",
+  function () {
+    var c = Config.initialize({
+      ssl: false
+    })
+    expect(c.ssl).equal(false)
+    expect(c.port).equal(80)
+    var c = Config.initialize({
+      ssl: false,
+      port: 9000
+    })
+    expect(c.ssl).equal(false)
+    expect(c.port).equal(9000)
+    idempotentEnv('NEW_RELIC_USE_SSL', 'false',
+                  function (c) {
+      expect(c.ssl).equal(false)
+      expect(c.port).equal(80)
+    })
+  })
+
   describe("when overriding configuration values via environment variables",
   function () {
     it("should pick up the application name", function () {
@@ -291,6 +311,13 @@ describe("the agent configuration", function () {
       idempotentEnv('NEW_RELIC_MAX_SQL_SAMPLES', '100', function (tc) {
         should.exist(tc.slow_sql.max_samples)
         expect(tc.slow_sql.max_samples).equal(100)
+      })
+    })
+
+    it('should pick up logging.enabled', function () {
+      idempotentEnv('NEW_RELIC_LOG_ENABLED', 'false', function (tc) {
+        should.exist(tc.logging.enabled)
+        expect(tc.logging.enabled).equal(false)
       })
     })
   })
