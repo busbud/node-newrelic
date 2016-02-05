@@ -1,11 +1,95 @@
+### v1.25.1 (2016-01-26):
+
+* Corrected an issue where the agent would sometimes crash looking up the port
+  of the HTTP server that a request came from.
+
+  Previously, the agent assumed the HTTP server would always have an address,
+  unfortunately this isn't the case if the HTTP server's `.close()` has been
+  called.
+
+
+### v1.25.0 (2016-01-20):
+
+* Added support for the new [Response Time Line](https://docs.newrelic.com/docs/data-analysis/user-interface-functions/response-time) and better representation of asynchronous data.
+
+  This has many implications in the UI. The first is the
+  [Application Overview](https://docs.newrelic.com/docs/apm/applications-menu/monitoring/apm-overview-page),
+  in the past we've always just shown "node" and maybe
+  "[request queueing](https://docs.newrelic.com/docs/apm/applications-menu/features/request-queuing-tracking-front-end-time)"
+  on the response time graph. We now show you an application breakdown like our
+  other language agents! This means you'll be able to see how much time was in
+  HTTP externals, your various datastores, or spent in node itself. Overlaid on
+  this will be your response time as a blue line.
+
+  Next page that has been affected is our
+  [Transaction Overview](https://docs.newrelic.com/docs/apm/applications-menu/monitoring/transactions-page)
+  page. Specifically when you click into a Transaction to see more detail.
+  Previously we showed you a breakdown of the top time consumers in that
+  transaction, both as a graph and as a table. Unfortunately that graph didn't
+  show response time and the table would show percentages over 100%. Now, like
+  the Application Overview, you will get a blue response time line and the
+  breakdown table will have numbers that add up much more intuitively!
+
+  Finally, our
+  [Transaction Trace](https://docs.newrelic.com/docs/apm/transactions/transaction-traces/viewing-transaction-traces)
+  view has also been updated. The change is very similar to the changes
+  mentioned above for the breakdown table in the Transaction Overview page. You
+  should no longer see percentages over 100% here either.
+
+* Transaction trace serialization is now 4x faster than before.
+
+  This speedup will primarily affect those with large, deeply nested
+  transactions. Though small transactions have seen some improvement as well.
+
+### v1.24.1 (2015-12-30):
+
+* Error totals are now reported.
+  
+  The agent now reports metrics that reflect the total number of errors that
+  have occurred in web and background transactions.
+
+* Disabling SSL no longer requires the setting of a port.
+  
+  Previously, the agent required changing `port` in the config to `80` when
+  disabling SSL. The agent will now default to port 80 if a port is not supplied and SSL
+  is turned off.
+
+* Logging functions have been improved.
+
+  The agent will now properly log error stack traces and can rate limit logging
+  messages. To aid in debugging we have provided more logging about the public API.
+
+### v1.24.0 (2015-11-18):
+
+* Advanced Analytics for APM Errors
+
+  With this release, the agent reports [TransactionError events](https://docs.newrelic.com/docs/insights/new-relic-insights/decorating-events/error-event-default-attributes-insights). These new events power the beta feature [Advanced Analytics for APM Errors](https://docs.newrelic.com/docs/apm/applications-menu/events/view-apm-errors-error-traces) (apply [here](https://discuss.newrelic.com/t/join-the-apm-errors-beta-of-real-time-analytics/31123) to participate). The error events are also available today through [New Relic Insights](http://newrelic.com/insights).
+
+  Advanced Analytics for APM Errors lets you see all of your errors with
+  granular detail, filter and group by any attribute to analyze them, and take
+  action to resolve issues through collaboration.
+
+* `NEW_RELIC_LOG_ENABLED` environment variable is now treated as a boolean.
+
+  Previously, this option was treated as a string, causing it to not work for
+  some use cases. Thanks to @jakecraige for contributing this fix!
+
+### v1.23.1 (2015-11-05):
+
+* `newrelic.getBrowserTimingHeader()` API now includes the full transaction name.
+
+  Previously, the agent would use a fragment of the transaction name, causing
+  Browser Monitoring transactions and APM transactions to not be cross linked.
+  This change makes the cross linking work correctly.
+
 ### v1.23.0 (2015-10-29):
 
 * The New Relic Node Agent now officially supports Node v4!
 
   We are excited to announce that the New Relic Node Agent officially supports
-  Node v4!  We've tested the agent across all major versions of Node used by New
+  Node v4.x!  We've tested the agent across all major versions of Node used by New
   Relic customers to ensure a quality Node APM experience.  New Relic recommends
-  upgrading to Node v4 for best Node Agent performance.
+  upgrading to Node v4.x for best Node Agent performance.
 
 * Corrected a parsing issue in the slow sql query parsing step.
 

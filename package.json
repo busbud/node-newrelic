@@ -1,6 +1,6 @@
 {
   "name": "@busbud/newrelic",
-  "version": "1.23.0",
+  "version": "1.25.1",
   "author": "New Relic Node.js agent team <nodejs@newrelic.com>",
   "licenses": [
     {

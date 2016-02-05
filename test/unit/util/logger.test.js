@@ -65,6 +65,20 @@ describe('logger', function() {
     })
   })
 
+  it('should support prepended extras from Error objects', function(done) {
+    var error = new Error('error1')
+    expect(error.message).to.not.be.undefined
+    expect(error.stack).to.not.be.undefined
+
+    logger.info(error, 'log message')
+    process.nextTick(function() {
+      var log1 = results[0]
+      expect(log1.message).equal(error.message)
+      expect(log1.stack).equal(error.stack)
+      done()
+    })
+  })
+
   it('should only log expected levels', function(done) {
     logger.trace('trace')
     logger.debug('debug')
@@ -157,6 +171,103 @@ describe('logger', function() {
       expect(results[2].b).equal(2)
       expect(results[2].c).equal(6)
       done()
+    })
+  })
+
+  it('should support child loggers with prepended extras from Error objects', function(done) {
+    var error = new Error('error1')
+    expect(error.message).to.not.be.undefined
+    expect(error.stack).to.not.be.undefined
+
+    var child = logger.child({a: 1})
+    child.info(error, 'log message')
+
+    process.nextTick(function() {
+      var log1 = results[0]
+      expect(log1.message).equal(error.message)
+      expect(log1.stack).equal(error.stack)
+      done()
+    })
+  })
+
+  describe('should have once methods', function () {
+    it('that respect log levels', function (done) {
+      logger.level('info')
+      logger.traceOnce('test', 'value')
+      process.nextTick(function () {
+        expect(results.length).equal(0)
+        logger.infoOnce('test', 'value')
+        process.nextTick(function () {
+          expect(results.length).equal(1)
+          compare_entry(results[0], 'value', 30, DEFAULT_KEYS)
+          done()
+        })
+      })
+    })
+
+    it('that log things once', function (done) {
+      logger.infoOnce('testkey', 'info')
+      logger.infoOnce('testkey', 'info')
+      logger.infoOnce('anothertestkey', 'another')
+
+      process.nextTick(function () {
+        expect(results.length).equal(2)
+        compare_entry(results[0], 'info', 30, DEFAULT_KEYS)
+        compare_entry(results[1], 'another', 30, DEFAULT_KEYS)
+        done()
+      })
+    })
+
+    it('that can handle objects', function (done) {
+      logger.infoOnce('a', {a:2}, 'hello a')
+      logger.infoOnce('a', {a:2}, 'hello c')
+
+      process.nextTick(function () {
+        expect(results.length).equal(1)
+        expect(results[0].a).equal(2)
+        compare_entry(results[0], 'hello a', 30, ['a'].concat(DEFAULT_KEYS))
+        done()
+      })
+    })
+  })
+
+  describe('should have once per interval methods', function () {
+    it('that respect log levels', function (done) {
+      logger.level('info')
+      logger.traceOncePer('test', 30, 'value')
+      process.nextTick(function () {
+        expect(results.length).equal(0)
+        logger.infoOncePer('test', 30, 'value')
+        process.nextTick(function () {
+          expect(results.length).equal(1)
+          compare_entry(results[0], 'value', 30, DEFAULT_KEYS)
+          done()
+        })
+      })
+    })
+
+    it('that log things at most once in an interval', function (done) {
+      logger.infoOncePer('key', 50, 'value')
+      logger.infoOncePer('key', 50, 'value')
+      setTimeout(function () {
+        logger.infoOncePer('key', 50, 'value')
+        process.nextTick(function () {
+          expect(results.length).equal(2)
+          compare_entry(results[0], 'value', 30, DEFAULT_KEYS)
+          compare_entry(results[1], 'value', 30, DEFAULT_KEYS)
+          done()
+        })
+      }, 100)
+    })
+    it('that can handle objects', function (done) {
+      logger.infoOncePer('a', 10, {a:2}, 'hello a')
+
+      process.nextTick(function () {
+        expect(results.length).equal(1)
+        expect(results[0].a).equal(2)
+        compare_entry(results[0], 'hello a', 30, ['a'].concat(DEFAULT_KEYS))
+        done()
+      })
     })
   })
 
